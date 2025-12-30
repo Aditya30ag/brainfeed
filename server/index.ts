@@ -94,14 +94,10 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
+  // Next.js handles the frontend, so we just serve the API
+  // In production, you can optionally serve static files from dist
+  if (process.env.NODE_ENV === "production" && process.env.SERVE_STATIC === "true") {
     serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
