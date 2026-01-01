@@ -8,7 +8,7 @@
   "/contact/page": "/contact",
   "/faq/page": "/faq",
   "/login/page": "/login",
-  "/page": "/",
   "/search/page": "/search",
+  "/page": "/",
   "/writer/dashboard/page": "/writer/dashboard"
 }

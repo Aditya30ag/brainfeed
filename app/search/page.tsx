@@ -11,6 +11,124 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, Suspense } from "react";
 import { setSEO } from "@/lib/seo";
 
+// Dummy articles with placeholder images for when backend is unavailable
+const DUMMY_ARTICLES = [
+  {
+    id: 1,
+    title: "The Future of Artificial Intelligence in Education",
+    slug: "future-of-ai-in-education",
+    excerpt: "Explore how AI is transforming the way we learn and teach, from personalized learning experiences to automated grading systems.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
+    categoryId: 1,
+    authorId: 1,
+    writerId: null,
+    isFeatured: true,
+    readTime: 8,
+    status: "approved",
+    clicks: 1250,
+    publishedAt: new Date("2024-12-15"),
+    createdAt: new Date("2024-12-15"),
+    category: { id: 1, name: "Technology", slug: "technology", description: "Tech articles", color: "#3B82F6" },
+    author: { id: 1, name: "Alex Johnson", avatar: "https://i.pravatar.cc/150?img=1", role: "Tech Writer", bio: "AI enthusiast" },
+  },
+  {
+    id: 2,
+    title: "Breaking Into Tech: A Complete Guide for Beginners",
+    slug: "breaking-into-tech-guide",
+    excerpt: "Essential tips and resources for anyone looking to start a career in technology, from coding bootcamps to networking strategies.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=600&fit=crop",
+    categoryId: 2,
+    authorId: 2,
+    writerId: null,
+    isFeatured: false,
+    readTime: 12,
+    status: "approved",
+    clicks: 2100,
+    publishedAt: new Date("2024-12-10"),
+    createdAt: new Date("2024-12-10"),
+    category: { id: 2, name: "Career", slug: "career", description: "Career advice", color: "#10B981" },
+    author: { id: 2, name: "Sarah Chen", avatar: "https://i.pravatar.cc/150?img=5", role: "Career Coach", bio: "Helping people break into tech" },
+  },
+  {
+    id: 3,
+    title: "Understanding Quantum Computing: Beyond the Hype",
+    slug: "quantum-computing-explained",
+    excerpt: "A deep dive into the fundamentals of quantum computing and its potential real-world applications in various industries.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&h=600&fit=crop",
+    categoryId: 3,
+    authorId: 3,
+    writerId: null,
+    isFeatured: true,
+    readTime: 15,
+    status: "approved",
+    clicks: 1800,
+    publishedAt: new Date("2024-12-08"),
+    createdAt: new Date("2024-12-08"),
+    category: { id: 3, name: "Science", slug: "science", description: "Scientific discoveries", color: "#8B5CF6" },
+    author: { id: 3, name: "Dr. Michael Torres", avatar: "https://i.pravatar.cc/150?img=12", role: "Quantum Physicist", bio: "Research scientist" },
+  },
+  {
+    id: 4,
+    title: "Sustainable Engineering: Building for Tomorrow",
+    slug: "sustainable-engineering",
+    excerpt: "How engineers are developing innovative solutions to address climate change and create a more sustainable future.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop",
+    categoryId: 4,
+    authorId: 4,
+    writerId: null,
+    isFeatured: false,
+    readTime: 10,
+    status: "approved",
+    clicks: 1450,
+    publishedAt: new Date("2024-12-05"),
+    createdAt: new Date("2024-12-05"),
+    category: { id: 4, name: "Engineering", slug: "engineering", description: "Engineering innovations", color: "#F59E0B" },
+    author: { id: 4, name: "Emma Rodriguez", avatar: "https://i.pravatar.cc/150?img=9", role: "Sustainability Engineer", bio: "Green tech advocate" },
+  },
+  {
+    id: 5,
+    title: "The Rise of Machine Learning in Healthcare",
+    slug: "ml-in-healthcare",
+    excerpt: "Discover how machine learning algorithms are revolutionizing medical diagnosis, drug discovery, and patient care.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&h=600&fit=crop",
+    categoryId: 5,
+    authorId: 5,
+    writerId: null,
+    isFeatured: true,
+    readTime: 11,
+    status: "approved",
+    clicks: 2300,
+    publishedAt: new Date("2024-12-01"),
+    createdAt: new Date("2024-12-01"),
+    category: { id: 5, name: "Healthcare", slug: "healthcare", description: "Healthcare tech", color: "#EC4899" },
+    author: { id: 5, name: "Dr. James Park", avatar: "https://i.pravatar.cc/150?img=15", role: "Medical AI Researcher", bio: "Bridging medicine and AI" },
+  },
+  {
+    id: 6,
+    title: "Cybersecurity Essentials for Modern Developers",
+    slug: "cybersecurity-essentials",
+    excerpt: "Learn the fundamental security practices every developer should know to protect applications and user data.",
+    content: "Full article content here...",
+    coverImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=600&fit=crop",
+    categoryId: 6,
+    authorId: 6,
+    writerId: null,
+    isFeatured: false,
+    readTime: 9,
+    status: "approved",
+    clicks: 1950,
+    publishedAt: new Date("2024-11-28"),
+    createdAt: new Date("2024-11-28"),
+    category: { id: 6, name: "Security", slug: "security", description: "Cybersecurity", color: "#EF4444" },
+    author: { id: 6, name: "Rachel Kim", avatar: "https://i.pravatar.cc/150?img=20", role: "Security Engineer", bio: "Protecting the digital world" },
+  }
+] as const;
+
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -18,7 +136,12 @@ function SearchContent() {
   const [query, setQuery] = useState(initialQuery);
   const [activeQuery, setActiveQuery] = useState(initialQuery);
 
-  const { data: articles, isLoading } = useArticles({ search: activeQuery });
+  const { data: articles, isLoading, error } = useArticles({ search: activeQuery });
+  
+  // Use dummy articles if backend fails
+  // Show real articles only if we have them and no error
+  const shouldShowDummy = error || (!isLoading && !articles);
+  const displayArticles = shouldShowDummy ? DUMMY_ARTICLES : articles;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,46 +199,45 @@ function SearchContent() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            {isLoading ? (
+            {isLoading && !error ? (
               <div className="flex items-center gap-2 text-muted-foreground font-semibold">
                 <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                 Searching...
               </div>
             ) : (
-              <p className="text-foreground font-bold text-lg">
-                Found <span className="text-primary">{articles?.length || 0}</span> results for "{activeQuery}"
-              </p>
+              <div className="space-y-2">
+                <p className="text-foreground font-bold text-lg">
+                  {shouldShowDummy ? (
+                    <>Showing <span className="text-primary">{displayArticles?.length || 0}</span> sample articles</>
+                  ) : (
+                    <>Found <span className="text-primary">{displayArticles?.length || 0}</span> results for "{activeQuery}"</>
+                  )}
+                </p>
+                {shouldShowDummy && (
+                  <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-sm bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>Backend unavailable - displaying sample content with placeholder images</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
-          {isLoading ? (
+          {isLoading && !error ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="h-[400px] bg-card rounded-2xl animate-pulse border-2 border-slate-200 dark:border-slate-800"></div>
               ))}
             </div>
-          ) : articles && articles.length > 0 ? (
+          ) : displayArticles && displayArticles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {articles.map((article) => (
+              {displayArticles.map((article) => (
                 <ArticleCard key={article.id} article={article} variant="standard" />
               ))}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-32">
-              <div className="w-24 h-24 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-6">
-                <Search className="w-12 h-12 text-muted-foreground" />
-              </div>
-              <div className="text-center max-w-md">
-                <h3 className="text-2xl font-bold font-display text-foreground mb-3">No Results Found</h3>
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  We couldn't find any articles matching "{activeQuery}". Try different keywords or browse our categories.
-                </p>
-                <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white rounded-xl px-6 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300">
-                  Browse Categories
-                </Button>
-              </div>
-            </div>
-          )}
+          ) : null}
         </div>
       </main>
       

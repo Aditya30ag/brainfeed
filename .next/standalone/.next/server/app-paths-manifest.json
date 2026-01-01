@@ -8,7 +8,7 @@
   "/contact/page": "app/contact/page.js",
   "/faq/page": "app/faq/page.js",
   "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
   "/search/page": "app/search/page.js",
+  "/page": "app/page.js",
   "/writer/dashboard/page": "app/writer/dashboard/page.js"
 }
