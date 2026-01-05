@@ -67,8 +67,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-slate-300 hover:text-white transition-colors">
-                  FAQ
+                <Link href="/blog" className="text-slate-300 hover:text-white transition-colors">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/subscribe" className="text-slate-300 hover:text-white transition-colors">
+                  Subscribe
                 </Link>
               </li>
               <li>
@@ -77,8 +82,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/chat" className="text-slate-300 hover:text-white transition-colors">
-                  AI Assistant
+                <Link href="/faq" className="text-slate-300 hover:text-white transition-colors">
+                  FAQ
                 </Link>
               </li>
             </ul>

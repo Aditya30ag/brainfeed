@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, ChevronDown, Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -15,6 +23,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isNewsDropdownOpen, setIsNewsDropdownOpen] = useState(false);
   const { isAuthenticated, isAdmin, isWriter } = useAuth();
 
   useEffect(() => {
@@ -22,6 +31,24 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.news-dropdown-container')) {
+        setIsNewsDropdownOpen(false);
+      }
+    };
+
+    if (isNewsDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isNewsDropdownOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +66,14 @@ export function Navbar() {
     { name: "Tech & AI", href: "/category/tech-ai" },
     { name: "Careers", href: "/category/careers" },
     { name: "Stories", href: "/category/stories" },
-    { name: "About", href: "/about" },
+  ];
+
+  const newsCategories = [
+    { name: "Press Release", href: "/category/press-release" },
+    { name: "Education", href: "/category/education" },
+    { name: "Science & Technology", href: "/category/science-technology" },
+    { name: "Environment", href: "/category/environment" },
+    { name: "Institutions Profiles", href: "/category/institutions-profiles" },
   ];
 
   return (
@@ -64,18 +98,77 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <button className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
-                  pathname === link.href 
-                    ? "text-primary border-b-2 border-primary pb-1" 
-                    : "text-slate-600 hover:text-primary"
-                }`}>
-                  {link.name}
-                </button>
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center gap-6">
+            <Link href="/about">
+              <button className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
+                pathname === "/about" 
+                  ? "text-primary border-b-2 border-primary pb-1" 
+                  : "text-slate-600 hover:text-primary"
+              }`}>
+                About Us
+              </button>
+            </Link>
+
+            {/* News Dropdown */}
+            <div className="relative news-dropdown-container">
+              <button 
+                onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
+                className={`text-sm font-semibold uppercase tracking-wide transition-colors flex items-center gap-1 ${
+                  isNewsDropdownOpen ? 'text-primary' : 'text-slate-600 hover:text-primary'
+                }`}
+              >
+                News
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isNewsDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {isNewsDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 mt-2 w-56 bg-white border border-slate-200 shadow-xl z-[100] rounded-sm overflow-hidden"
+                >
+                  {newsCategories.map((category) => (
+                    <Link 
+                      key={category.href} 
+                      href={category.href}
+                      onClick={() => setIsNewsDropdownOpen(false)}
+                    >
+                      <div className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary hover:text-white transition-colors cursor-pointer border-b border-slate-100 last:border-b-0">
+                        {category.name}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/subscribe">
+              <button className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
+                pathname === "/subscribe" 
+                  ? "text-primary border-b-2 border-primary pb-1" 
+                  : "text-slate-600 hover:text-primary"
+              }`}>
+                Subscribe
+              </button>
+            </Link>
+
+            <Link href="/contact">
+              <button className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
+                pathname === "/contact" 
+                  ? "text-primary border-b-2 border-primary pb-1" 
+                  : "text-slate-600 hover:text-primary"
+              }`}>
+                Contact Us
+              </button>
+            </Link>
+
+            <Link href="/blog">
+              <button className={`text-sm font-semibold uppercase tracking-wide transition-colors ${
+                pathname === "/blog" 
+                  ? "text-primary border-b-2 border-primary pb-1" 
+                  : "text-slate-600 hover:text-primary"
+              }`}>
+                Blog
+              </button>
+            </Link>
           </nav>
 
           {/* Right Actions */}
@@ -110,6 +203,16 @@ export function Navbar() {
                 <Search className="w-5 h-5" />
               </button>
             )}
+
+            {/* Bookmarks */}
+            <Link href="/bookmarks">
+              <button
+                className="hidden md:flex items-center justify-center w-10 h-10 text-slate-600 hover:text-primary transition-colors"
+                title="My Bookmarks"
+              >
+                <Bookmark className="w-5 h-5" />
+              </button>
+            </Link>
 
             {/* Auth Links */}
             {isAuthenticated ? (
@@ -175,20 +278,103 @@ export function Navbar() {
 
             {/* Mobile Nav Links */}
             <nav className="space-y-2">
-              {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
-                      pathname === link.href 
-                        ? "bg-primary text-white" 
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {link.name}
-                  </button>
-                </Link>
-              ))}
+              <Link href="/bookmarks">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors flex items-center gap-2 ${
+                    pathname === "/bookmarks" 
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <Bookmark className="w-4 h-4" />
+                  My Bookmarks
+                </button>
+              </Link>
+
+              <Link href="/about">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
+                    pathname === "/about" 
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  About Us
+                </button>
+              </Link>
+
+              {/* Mobile News Dropdown */}
+              <div className="bg-slate-50">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsNewsDropdownOpen(!isNewsDropdownOpen);
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold uppercase tracking-wide text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  News
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isNewsDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isNewsDropdownOpen && (
+                  <div className="bg-white border-t border-slate-200">
+                    {newsCategories.map((category) => (
+                      <Link 
+                        key={category.href} 
+                        href={category.href}
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setIsNewsDropdownOpen(false);
+                        }}
+                      >
+                        <div className="w-full text-left px-8 py-3 text-sm text-slate-700 hover:bg-primary hover:text-white transition-colors border-b border-slate-100 last:border-b-0">
+                          {category.name}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Link href="/subscribe">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
+                    pathname === "/subscribe" 
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Subscribe
+                </button>
+              </Link>
+
+              <Link href="/contact">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
+                    pathname === "/contact" 
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Contact Us
+                </button>
+              </Link>
+
+              <Link href="/blog">
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`w-full text-left px-4 py-3 text-sm font-semibold uppercase tracking-wide transition-colors ${
+                    pathname === "/blog" 
+                      ? "bg-primary text-white" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Blog
+                </button>
+              </Link>
             </nav>
 
             {/* Mobile Auth */}

@@ -17,6 +17,8 @@ export default function ArticleDetail() {
   const params = useParams();
   const slug = params?.slug as string || "";
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   
   useEffect(() => {
     const handleScroll = () => {
@@ -60,6 +62,63 @@ export default function ArticleDetail() {
         "keywords": `${article.category.name}, education, learning`,
         "articleSection": article.category.name
       });
+    }
+  }, [article]);
+
+  const handleShare = async () => {
+    if (!article) return;
+
+    const shareData = {
+      title: article.title,
+      text: article.excerpt,
+      url: window.location.href,
+    };
+
+    try {
+      // Try using the Web Share API first (mobile friendly)
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2000);
+      }
+    } catch (err) {
+      // If user cancels share or any error occurs
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Error sharing:', err);
+      }
+    }
+  };
+
+  const handleBookmark = () => {
+    if (!article) return;
+    
+    // Toggle bookmark state
+    setIsBookmarked(!isBookmarked);
+    
+    // Save to localStorage
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    if (!isBookmarked) {
+      bookmarks.push({
+        id: article.id,
+        slug: article.slug,
+        title: article.title,
+        savedAt: new Date().toISOString()
+      });
+    } else {
+      const index = bookmarks.findIndex((b: any) => b.id === article.id);
+      if (index > -1) bookmarks.splice(index, 1);
+    }
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  };
+
+  // Check if article is bookmarked on load
+  useEffect(() => {
+    if (article) {
+      const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+      setIsBookmarked(bookmarks.some((b: any) => b.id === article.id));
     }
   }, [article]);
   
@@ -154,12 +213,31 @@ export default function ArticleDetail() {
                   <Clock className="w-4 h-4" />
                   {article.readTime} min read
                 </span>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className="border-slate-300 hover:border-primary hover:text-primary">
+                <div className="flex gap-2 relative">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="border-slate-300 hover:border-primary hover:text-primary transition-colors relative"
+                    onClick={handleShare}
+                    title="Share article"
+                  >
                     <Share2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="icon" className="border-slate-300 hover:border-primary hover:text-primary">
-                    <Bookmark className="w-4 h-4" />
+                  {shareSuccess && (
+                    <span className="absolute -top-8 left-0 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                      Link copied!
+                    </span>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className={`border-slate-300 hover:border-primary transition-colors ${
+                      isBookmarked ? 'bg-primary text-white border-primary' : 'hover:text-primary'
+                    }`}
+                    onClick={handleBookmark}
+                    title={isBookmarked ? "Remove bookmark" : "Bookmark article"}
+                  >
+                    <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
                   </Button>
                 </div>
               </div>
